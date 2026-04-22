@@ -1,0 +1,27 @@
+name: Verify Emails
+
+on:
+  repository_dispatch:
+    types: [verify_emails]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      - name: Run verification
+        env:
+          BATCH_ID:      ${{ github.event.client_payload.batch_id }}
+          EMAILS_JSON:   ${{ toJson(github.event.client_payload.emails) }}
+          FROM_DOMAIN:   ${{ github.event.client_payload.from_domain }}
+          SERVER_URL:    ${{ secrets.SERVER_URL }}
+          SERVER_SECRET: ${{ secrets.SERVER_SECRET }}
+        run: python verify_and_push.py
